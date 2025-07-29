@@ -16,7 +16,7 @@ Future<void> init() async {
   // Initialize Hive
   await Hive.initFlutter();
   Hive.registerAdapter(TaskModelAdapter());
-  
+
   // Data sources
   final taskBox = await Hive.openBox<TaskModel>('tasks');
   sl.registerLazySingleton<TaskLocalDataSource>(

@@ -16,8 +16,11 @@ enum TaskStatus {
 
   static TaskStatus? fromString(String value) {
     try {
+      // Handle both enum name and display name
+      final normalizedValue = value.toLowerCase().replaceAll(' ', '');
       return TaskStatus.values.firstWhere(
-        (e) => e.toString() == 'TaskStatus.${value.toLowerCase().replaceAll(' ', '')}',
+        (e) => e.toString().toLowerCase() == 'taskstatus.$normalizedValue' ||
+              e.displayName.toLowerCase() == value.toLowerCase(),
       );
     } catch (e) {
       return null;

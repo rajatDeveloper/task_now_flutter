@@ -26,7 +26,7 @@ final class TaskLoaded extends TaskState {
   const TaskLoaded({
     required this.tasks,
     this.filter = 'all',
-    this.isDarkMode = false,
+    this.isDarkMode = false,s
   });
   
   @override

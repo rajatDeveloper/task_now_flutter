@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:task_now/features/task/domain/entities/task_status.dart';
 import 'package:task_now/core/usecase/usecase.dart';
 import 'package:task_now/features/task/domain/usecases/add_task.dart';
@@ -98,15 +98,28 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
   ) async {
     if (state is TaskLoaded) {
       final task = event.task;
-      final updatedTask = task.copyWith(
-        status: task.status == TaskStatus.todo 
-            ? TaskStatus.inProgress 
-            : task.status == TaskStatus.inProgress 
-                ? TaskStatus.done 
-                : TaskStatus.todo,
-      );
+      TaskStatus newStatus;
       
-      add(UpdateTaskEvent(updatedTask));
+      // Cycle through statuses: todo -> inProgress -> done -> todo
+      switch (task.status) {
+        case TaskStatus.todo:
+          newStatus = TaskStatus.inProgress;
+          break;
+        case TaskStatus.inProgress:
+          newStatus = TaskStatus.done;
+          break;
+        case TaskStatus.done:
+          newStatus = TaskStatus.todo;
+          break;
+      }
+      
+      final updatedTask = task.copyWith(status: newStatus);
+      final result = await updateTask(updatedTask);
+      
+      result.fold(
+        (failure) => emit(TaskError(failure.toString())),
+        (_) => add(const LoadTasks()),
+      );
     }
   }
 

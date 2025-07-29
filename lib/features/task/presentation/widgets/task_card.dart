@@ -19,13 +19,13 @@ class TaskCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+    final isDone = task.status == TaskStatus.done;
+    final isInProgress = task.status == TaskStatus.inProgress;
+
     return Card(
       elevation: 2,
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
@@ -36,19 +36,49 @@ class TaskCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Checkbox(
-                    value: task.status == TaskStatus.done,
-                    onChanged: onStatusChanged,
-                    shape: const CircleBorder(),
+                  // Custom status indicator
+                  GestureDetector(
+                    onTap: () {
+                      // Let the parent handle the status change
+                      if (onStatusChanged != null) {
+                        onStatusChanged!(true);
+                      }
+                    },
+                    child: Container(
+                      width: 24,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: isDone 
+                            ? Colors.green 
+                            : isInProgress 
+                                ? Colors.blue 
+                                : Colors.transparent,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isInProgress 
+                              ? Colors.blue 
+                              : isDone 
+                                  ? Colors.green 
+                                  : Colors.grey,
+                          width: 2,
+                        ),
+                      ),
+                      child: isDone 
+                          ? const Icon(Icons.check, size: 16, color: Colors.white)
+                          : isInProgress 
+                              ? const Icon(Icons.hourglass_bottom, size: 16, color: Colors.white)
+                              : null,
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       task.title,
                       style: theme.textTheme.titleMedium?.copyWith(
-                        decoration: task.status == TaskStatus.done
-                            ? TextDecoration.lineThrough
-                            : null,
+                        decoration:
+                            task.status == TaskStatus.done
+                                ? TextDecoration.lineThrough
+                                : null,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -63,10 +93,10 @@ class TaskCard extends StatelessWidget {
                     ),
                 ],
               ),
-              if (task.description?.isNotEmpty == true) ...[
+              if (task.description.isNotEmpty == true) ...[
                 const SizedBox(height: 8),
                 Text(
-                  task.description!,
+                  task.description,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.textTheme.bodySmall?.color,
                   ),
@@ -77,11 +107,7 @@ class TaskCard extends StatelessWidget {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  Icon(
-                    Icons.calendar_today,
-                    size: 16,
-                    color: theme.hintColor,
-                  ),
+                  Icon(Icons.calendar_today, size: 16, color: theme.hintColor),
                   const SizedBox(width: 4),
                   Text(
                     _formatDate(task.dueDate),

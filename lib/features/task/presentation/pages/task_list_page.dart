@@ -74,13 +74,8 @@ class _TaskListPageState extends State<TaskListPage> {
                     task: task,
                     onTap: () => _showTaskDetails(task),
                     onStatusChanged: (value) {
-                      final newStatus = value == true
-                          ? TaskStatus.done
-                          : TaskStatus.todo;
-                      final updatedTask = task.copyWith(status: newStatus);
-                      context
-                          .read<TaskBloc>()
-                          .add(UpdateTaskEvent(updatedTask));
+                      // Dispatch the ToggleTaskStatus event
+                      context.read<TaskBloc>().add(ToggleTaskStatus(task));
                     },
                     onDelete: () => _confirmDeleteTask(task),
                   );

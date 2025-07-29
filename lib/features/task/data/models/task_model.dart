@@ -43,7 +43,8 @@ class TaskModel extends HiveObject {
       title: task.title,
       description: task.description,
       dueDate: task.dueDate,
-      status: task.status.toString().split('.').last,
+      // Store the enum value name (e.g., 'todo', 'inProgress', 'done')
+      status: task.status.name,
       createdAt: task.createdAt,
       updatedAt: task.updatedAt,
     );
