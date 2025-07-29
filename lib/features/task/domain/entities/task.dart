@@ -2,7 +2,7 @@ import 'package:uuid/uuid.dart';
 
 import 'task_status.dart';
 
-class Task {
+class MainTask {
   final String id;
   final String title;
   final String description;
@@ -11,7 +11,7 @@ class Task {
   final DateTime createdAt;
   final DateTime? updatedAt;
 
-  Task({
+  MainTask({
     String? id,
     required this.title,
     this.description = '',
@@ -22,7 +22,7 @@ class Task {
   })  : id = id ?? const Uuid().v4(),
         createdAt = createdAt ?? DateTime.now();
 
-  Task copyWith({
+  MainTask copyWith({
     String? id,
     String? title,
     String? description,
@@ -31,7 +31,7 @@ class Task {
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
-    return Task(
+    return MainTask(
       id: id ?? this.id,
       title: title ?? this.title,
       description: description ?? this.description,
@@ -54,8 +54,8 @@ class Task {
     };
   }
 
-  factory Task.fromMap(Map<String, dynamic> map) {
-    return Task(
+  factory MainTask.fromMap(Map<String, dynamic> map) {
+    return MainTask(
       id: map['id'] as String,
       title: map['title'] as String,
       description: map['description'] as String? ?? '',

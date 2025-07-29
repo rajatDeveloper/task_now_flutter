@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:task_now/features/task/domain/entities/task.dart';
+import 'package:flutter/material.dart';
+import 'package:task_now/features/task/domain/entities/task.dart' show MainTask;
 
 @immutable
 sealed class TaskState extends Equatable {
@@ -18,7 +19,7 @@ final class TaskLoading extends TaskState {
 }
 
 final class TaskLoaded extends TaskState {
-  final List<Task> tasks;
+  final List<MainTask> tasks;
   final String filter;
   final bool isDarkMode;
   
@@ -32,7 +33,7 @@ final class TaskLoaded extends TaskState {
   List<Object?> get props => [tasks, filter, isDarkMode];
   
   TaskLoaded copyWith({
-    List<Task>? tasks,
+    List<MainTask>? tasks,
     String? filter,
     bool? isDarkMode,
   }) {

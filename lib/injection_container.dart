@@ -1,7 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:task_now/core/utils/hive_initializer.dart';
 import 'package:task_now/features/task/data/datasources/task_local_data_source.dart';
+import 'package:task_now/features/task/data/models/task_model.dart';
 import 'package:task_now/features/task/data/repositories/task_repository_impl.dart';
 import 'package:task_now/features/task/domain/repositories/task_repository.dart';
 import 'package:task_now/features/task/domain/usecases/add_task.dart';
@@ -13,7 +13,27 @@ import 'package:task_now/features/task/presentation/bloc/task_bloc.dart';
 final sl = GetIt.instance;
 
 Future<void> init() async {
-  //! Features - Task
+  // Initialize Hive
+  await Hive.initFlutter();
+  Hive.registerAdapter(TaskModelAdapter());
+  
+  // Data sources
+  final taskBox = await Hive.openBox<TaskModel>('tasks');
+  sl.registerLazySingleton<TaskLocalDataSource>(
+    () => TaskLocalDataSourceImpl(box: taskBox),
+  );
+
+  // Repository
+  sl.registerLazySingleton<TaskRepository>(
+    () => TaskRepositoryImpl(localDataSource: sl()),
+  );
+
+  // Use cases
+  sl.registerLazySingleton(() => GetTasks(sl()));
+  sl.registerLazySingleton(() => AddTask(sl()));
+  sl.registerLazySingleton(() => UpdateTask(sl()));
+  sl.registerLazySingleton(() => DeleteTask(sl()));
+
   // Bloc
   sl.registerFactory(
     () => TaskBloc(
@@ -23,27 +43,4 @@ Future<void> init() async {
       deleteTask: sl(),
     ),
   );
-
-  // Use cases
-  sl.registerLazySingleton(() => GetTasks(sl()));
-  sl.registerLazySingleton(() => AddTask(sl()));
-  sl.registerLazySingleton(() => UpdateTask(sl()));
-  sl.registerLazySingleton(() => DeleteTask(sl()));
-
-  // Repository
-  sl.registerLazySingleton<TaskRepository>(
-    () => TaskRepositoryImpl(
-      localDataSource: sl(),
-    ),
-  );
-
-  // Data sources
-  sl.registerLazySingleton<TaskLocalDataSource>(
-    () => TaskLocalDataSourceImpl(
-      box: Hive.box(HiveInitializer.tasksBox),
-    ),
-  );
-
-  //! External
-  await HiveInitializer.init();
 }

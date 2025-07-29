@@ -1,5 +1,5 @@
 import 'package:hive/hive.dart';
-import 'package:task_now/features/task/domain/entities/task.dart';
+import 'package:task_now/features/task/domain/entities/task.dart' show MainTask;
 import 'package:task_now/features/task/domain/entities/task_status.dart';
 
 part 'task_model.g.dart';
@@ -37,7 +37,7 @@ class TaskModel extends HiveObject {
     this.updatedAt,
   });
 
-  factory TaskModel.fromEntity(Task task) {
+  factory TaskModel.fromEntity(MainTask task) {
     return TaskModel(
       id: task.id,
       title: task.title,
@@ -49,8 +49,8 @@ class TaskModel extends HiveObject {
     );
   }
 
-  Task toEntity() {
-    return Task(
+  MainTask toEntity() {
+    return MainTask(
       id: id,
       title: title,
       description: description,

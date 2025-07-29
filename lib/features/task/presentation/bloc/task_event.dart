@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:task_now/features/task/domain/entities/task.dart';
+import 'package:flutter/material.dart';
+import 'package:task_now/features/task/domain/entities/task.dart' show MainTask;
 
 @immutable
 sealed class TaskEvent extends Equatable {
@@ -14,7 +15,7 @@ class LoadTasks extends TaskEvent {
 }
 
 class AddTaskEvent extends TaskEvent {
-  final Task task;
+  final MainTask task;
   
   const AddTaskEvent(this.task);
   
@@ -23,7 +24,7 @@ class AddTaskEvent extends TaskEvent {
 }
 
 class UpdateTaskEvent extends TaskEvent {
-  final Task task;
+  final MainTask task;
   
   const UpdateTaskEvent(this.task);
   
@@ -41,7 +42,7 @@ class DeleteTaskEvent extends TaskEvent {
 }
 
 class ToggleTaskStatus extends TaskEvent {
-  final Task task;
+  final MainTask task;
   
   const ToggleTaskStatus(this.task);
   

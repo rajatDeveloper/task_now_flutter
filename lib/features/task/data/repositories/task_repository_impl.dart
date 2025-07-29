@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:task_now/core/errors/failures.dart';
 import 'package:task_now/features/task/data/datasources/task_local_data_source.dart';
-import 'package:task_now/features/task/domain/entities/task.dart';
+import 'package:task_now/features/task/domain/entities/task.dart' show MainTask;
 import 'package:task_now/features/task/domain/repositories/task_repository.dart';
 
 class TaskRepositoryImpl implements TaskRepository {
@@ -10,38 +10,42 @@ class TaskRepositoryImpl implements TaskRepository {
   TaskRepositoryImpl({required this.localDataSource});
 
   @override
-  Future<List<Task>> getTasks() async {
+  Future<Either<Failure, List<MainTask>>> getTasks() async {
     try {
-      return await localDataSource.getTasks();
+      final tasks = await localDataSource.getTasks();
+      return right(tasks);
     } catch (e) {
-      throw const CacheFailure(message: 'Failed to load tasks');
+      return left(const CacheFailure(message: 'Failed to load tasks'));
     }
   }
 
   @override
-  Future<void> addTask(Task task) async {
+  Future<Either<Failure, void>> addTask(MainTask task) async {
     try {
       await localDataSource.addTask(task);
+      return right(null);
     } catch (e) {
-      throw const CacheFailure(message: 'Failed to add task');
+      return left(const CacheFailure(message: 'Failed to add task'));
     }
   }
 
   @override
-  Future<void> updateTask(Task task) async {
+  Future<Either<Failure, void>> updateTask(MainTask task) async {
     try {
       await localDataSource.updateTask(task);
+      return right(null);
     } catch (e) {
-      throw const CacheFailure(message: 'Failed to update task');
+      return left(const CacheFailure(message: 'Failed to update task'));
     }
   }
 
   @override
-  Future<void> deleteTask(String id) async {
+  Future<Either<Failure, void>> deleteTask(String id) async {
     try {
       await localDataSource.deleteTask(id);
+      return right(null);
     } catch (e) {
-      throw const CacheFailure(message: 'Failed to delete task');
+      return left(const CacheFailure(message: 'Failed to delete task'));
     }
   }
 }
