@@ -17,6 +17,14 @@ class TaskListPage extends StatefulWidget {
 }
 
 class _TaskListPageState extends State<TaskListPage> {
+  TaskStatus? _filterStatus;
+
+  void _onFilterChanged(TaskStatus? status) {
+    setState(() {
+      _filterStatus = status;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -27,7 +35,7 @@ class _TaskListPageState extends State<TaskListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Tasks'),
+        title: const Text('Task List'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -39,60 +47,108 @@ class _TaskListPageState extends State<TaskListPage> {
           ),
         ],
       ),
-      body: BlocConsumer<TaskBloc, TaskState>(
-        listener: (context, state) {
-          if (state is TaskError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
-          }
-        },
+      body: BlocBuilder<TaskBloc, TaskState>(
         builder: (context, state) {
           if (state is TaskLoading) {
             return const CustomLoadingIndicator(message: 'Loading tasks...');
-          } else if (state is TaskLoaded) {
-            final tasks = state.tasks;
-            
-            if (tasks.isEmpty) {
-              return EmptyState(
-                message: 'No tasks yet!\nTap the + button to add a new task.',
-                actionText: 'Add Task',
-                onActionPressed: _showAddTaskDialog,
-              );
-            }
-            
-            return RefreshIndicator(
-              onRefresh: () async {
-                context.read<TaskBloc>().add(const LoadTasks());
-              },
-              child: ListView.builder(
-                itemCount: tasks.length,
-                padding: const EdgeInsets.only(bottom: 80),
-                itemBuilder: (context, index) {
-                  final task = tasks[index];
-                  return TaskCard(
-                    task: task,
-                    onTap: () => _showTaskDetails(task),
-                    onStatusChanged: (value) {
-                      // Dispatch the ToggleTaskStatus event
-                      context.read<TaskBloc>().add(ToggleTaskStatus(task));
-                    },
-                    onDelete: () => _confirmDeleteTask(task),
-                  );
-                },
-              ),
-            );
-          } else if (state is TaskError) {
+          } 
+          
+          if (state is TaskError) {
             return EmptyState(
               message: 'Failed to load tasks.\n${state.message}',
-              actionText: 'Retry',
-              onActionPressed: () {
-                context.read<TaskBloc>().add(const LoadTasks());
-              },
+              // onRetry: () => context.read<TaskBloc>().add(const LoadTasks()),
             );
           }
+
+          final tasks = state is TaskLoaded 
+              ? _filterStatus != null 
+                  ? state.tasks.where((task) => task.status == _filterStatus).toList()
+                  : state.tasks
+              : [];
           
-          return const SizedBox.shrink();
+          final hasTasks = tasks.isNotEmpty;
+          final hasNoTasks = state is TaskLoaded && state.tasks.isEmpty;
+          
+          return Column(
+            children: [
+              // Filter Chips
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ChoiceChip(
+                        label: const Text('All'),
+                        selected: _filterStatus == null,
+                        onSelected: (selected) => _onFilterChanged(null),
+                      ),
+                      const SizedBox(width: 8),
+                      ChoiceChip(
+                        label: const Text('To Do'),
+                        selected: _filterStatus == TaskStatus.todo,
+                        onSelected: (selected) => _onFilterChanged(TaskStatus.todo),
+                      ),
+                      const SizedBox(width: 8),
+                      ChoiceChip(
+                        label: const Text('In Progress'),
+                        selected: _filterStatus == TaskStatus.inProgress,
+                        onSelected: (selected) => _onFilterChanged(TaskStatus.inProgress),
+                      ),
+                      const SizedBox(width: 8),
+                      ChoiceChip(
+                        label: const Text('Done'),
+                        selected: _filterStatus == TaskStatus.done,
+                        onSelected: (selected) => _onFilterChanged(TaskStatus.done),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              
+              // Task List or Empty State
+              if (hasNoTasks)
+                Expanded(
+                  child: EmptyState(
+                    message: 'No tasks yet!\nTap the + button to add a new task.',
+                    actionText: 'Add Task',
+                    onActionPressed: _showAddTaskDialog,
+                  ),
+                )
+              else if (!hasTasks)
+                Expanded(
+                  child: EmptyState(
+                    message: 'No ${_filterStatus?.displayName.toLowerCase() ?? ''} tasks found.',
+                    actionText: 'View All',
+                    onActionPressed: () => _onFilterChanged(null),
+                  ),
+                )
+              else
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: () async {
+                      context.read<TaskBloc>().add(const LoadTasks());
+                    },
+                    child: ListView.builder(
+                      itemCount: tasks.length,
+                      padding: const EdgeInsets.only(bottom: 80),
+                      itemBuilder: (context, index) {
+                        final task = tasks[index];
+                        return TaskCard(
+                          task: task,
+                          onTap: () => _showTaskDetails(task),
+                          onStatusChanged: (value) {
+                            context.read<TaskBloc>().add(ToggleTaskStatus(task));
+                          },
+                          onDelete: () => _confirmDeleteTask(task),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+            ],
+          );
         },
       ),
       floatingActionButton: FloatingActionButton(

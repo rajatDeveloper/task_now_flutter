@@ -5,6 +5,7 @@ class EmptyState extends StatelessWidget {
   final String message;
   final String? assetPath;
   final VoidCallback? onActionPressed;
+  final VoidCallback? onRetry;
   final String? actionText;
 
   const EmptyState({
@@ -12,6 +13,7 @@ class EmptyState extends StatelessWidget {
     required this.message,
     this.assetPath,
     this.onActionPressed,
+    this.onRetry,
     this.actionText,
   }) : super(key: key);
 
@@ -47,7 +49,13 @@ class EmptyState extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            if (onActionPressed != null && actionText != null) ...[
+            if (onRetry != null) ...[
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: onRetry,
+                child: const Text('Retry'),
+              ),
+            ] else if (onActionPressed != null && actionText != null) ...[
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: onActionPressed,
